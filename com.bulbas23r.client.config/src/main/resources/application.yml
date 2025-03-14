@@ -19,5 +19,9 @@ spring:
             AwEHoUQDQgAEbM1/GqnFDtckrA218T8ShXiojAXK74Ebu6JCDJNjRXggx0KbDXn3
             YAf65zlUxT29W8JrhdzXMsQqeVU5PxKP2w==
             -----END EC PRIVATE KEY-----
-    
-    
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
