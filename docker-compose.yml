@@ -62,3 +62,8 @@ services:
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
       KAFKA_CLUSTERS_0_READONLY: "false"
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: bulbasaur-zipkin
+    ports:
+      - "9411:9411"
