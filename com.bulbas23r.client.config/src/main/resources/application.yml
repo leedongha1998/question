@@ -1,0 +1,23 @@
+server:
+  port: 18080
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: git@github.com:Bulbas23r/Configuration-Files.git
+          default-label: main
+          ignoreLocalSshSettings: true
+          hostKey: AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+          hostKeyAlgorithm: ecdsa-sha2-nistp256
+          privateKey: |
+            -----BEGIN EC PRIVATE KEY-----
+            MHcCAQEEIFVjNsAzV3HKRmP1g7Z6qXIsVRKkz3I1Efrm6GjwteU3oAoGCCqGSM49
+            AwEHoUQDQgAEbM1/GqnFDtckrA218T8ShXiojAXK74Ebu6JCDJNjRXggx0KbDXn3
+            YAf65zlUxT29W8JrhdzXMsQqeVU5PxKP2w==
+            -----END EC PRIVATE KEY-----
+    
+    
