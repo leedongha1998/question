@@ -8,6 +8,10 @@ spring:
       discovery:
         enabled: true
         service-id: config-server
+  jpa:
+    properties:
+      hibernate:
+        default_schema: HUB_SCHEMA
 
 eureka:
   client:
