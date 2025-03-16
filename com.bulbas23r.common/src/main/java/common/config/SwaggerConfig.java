@@ -15,9 +15,9 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()
-            .title("Tenten Backend API")
+            .title("Bulbas23r API")
             .version("1.0.0")
-            .description("Tenten Backend API 문서입니다.");
+            .description("Bulbas23r API 문서입니다.");
 
         String jwtSchemeName = "JWT";
 
