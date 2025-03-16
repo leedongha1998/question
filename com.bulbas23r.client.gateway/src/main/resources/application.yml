@@ -6,22 +6,29 @@ spring:
 
   cloud:
     gateway:
-      routes:  # Spring Cloud Gateway의 라우팅 설정
+      routes: # Spring Cloud Gateway의 라우팅 설정
         - id: order-service  # 라우트 식별자
           uri: lb://order-service  # ‘order-service’라는 이름으로 로드 밸런싱된 서비스로 라우팅
           predicates:
-            - Path=/api/orders/**  # /order/** 경로로 들어오는 요청을 이 라우트로 처리
-#        - id: product-service  # 라우트 식별자
-#          uri: lb://product-service  # ‘product-service’라는 이름으로 로드 밸런싱된 서비스로 라우팅
-#          predicates:
-#            - Path=/product/**  # /product/** 경로로 들어오는 요청을 이 라우트로 처리
-#        - id: auth-service
-#          uri: lb://auth-service
-#          predicates:
-#            - Path=/auth/**
+            - Path=/api/orders/**, /order-service/v3/api-docs
+      #        - id: product-service  # 라우트 식별자
+      #          uri: lb://product-service  # ‘product-service’라는 이름으로 로드 밸런싱된 서비스로 라우팅
+      #          predicates:
+      #            - Path=/product/**  # /product/** 경로로 들어오는 요청을 이 라우트로 처리
+      #        - id: auth-service
+      #          uri: lb://auth-service
+      #          predicates:
+      #            - Path=/auth/**
       discovery:
         locator:
           enabled: true  # 서비스 디스커버리를 통해 동적으로 라우트를 생성하도록 설정
+#    config:
+#      discovery:
+#        enabled: true
+#        service-id: config-server
+#
+#  config:
+#    import: configserver:http://localhost:18080
 
 server:
   port: 19091
@@ -30,3 +37,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+springdoc:
+  swagger-ui:
+    urls[0]:
+      name: order-service
+      url: /order-service/v3/api-docs
+    use-root-path: true
+
