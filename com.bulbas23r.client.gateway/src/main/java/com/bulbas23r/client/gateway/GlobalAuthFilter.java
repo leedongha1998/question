@@ -16,14 +16,14 @@ import reactor.core.publisher.Mono;
 @Component
 public class GlobalAuthFilter implements GlobalFilter, Ordered {
 
-  private final JwtUtil jwtUtil;
+  private final GatewayJwtUtil jwtUtil;
   private final List<String> openApiEndpoints = List.of(
       "/api/auth/login",
       "/api/auth/refresh-token",
       "/api/auth/logout",
       "/actuator");
 
-  public GlobalAuthFilter(JwtUtil jwtUtil) {
+  public GlobalAuthFilter(GatewayJwtUtil jwtUtil) {
     this.jwtUtil = jwtUtil;
   }
 

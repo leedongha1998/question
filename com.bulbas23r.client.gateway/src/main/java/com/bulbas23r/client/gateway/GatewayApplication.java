@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.bulbas23r.client.gateway","common"})
+//@ComponentScan(basePackages = {"com.bulbas23r.client.gateway","common"})
 @EnableDiscoveryClient
 @EnableWebFlux
 public class GatewayApplication {
