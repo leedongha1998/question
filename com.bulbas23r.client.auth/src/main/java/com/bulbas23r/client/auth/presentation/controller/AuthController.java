@@ -32,9 +32,8 @@ public class AuthController {
 
     HttpHeaders headers = new HttpHeaders();
     headers.set("X-User-Id", String.valueOf(response.getUserId()));
-    headers.set("X-User-Name", response.getUsername());
+    headers.set("X-User-Username", response.getUsername());
     headers.set("X-User-Role", response.getRole());
-
 
     return ResponseEntity.ok().headers(headers).body(loginResponseDto);
   }
@@ -52,7 +51,7 @@ public class AuthController {
 
       HttpHeaders headers = new HttpHeaders();
       headers.set("X-User-Id", String.valueOf(response.getUserId()));
-      headers.set("X-User-Name", response.getUsername());
+      headers.set("X-User-Username", response.getUsername());
       headers.set("X-User-Role", response.getRole());
 
 

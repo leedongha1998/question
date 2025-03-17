@@ -7,7 +7,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+//@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@SpringBootApplication
 @ComponentScan(basePackages = {"com.bulbas23r.client.user", "common"})
 @EnableFeignClients
 @EnableDiscoveryClient

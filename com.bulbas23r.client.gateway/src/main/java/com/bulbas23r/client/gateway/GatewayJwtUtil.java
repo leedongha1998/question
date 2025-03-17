@@ -12,40 +12,29 @@ import jakarta.annotation.PostConstruct;
 import java.security.Key;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 @Slf4j
 public class GatewayJwtUtil {
-  private final String SECRET_KEY = "daskdjflkasdjf;akdsmkcn;lakdsn;knaskfneklsdnkflsdkfnsdfsdf";
+
+  private final String SECRET_KEY;
+
   private final long EXPIRATION_TIME = 1000 * 60 * 60; // 60분
   private final long REFRESH_TOKEN_TIME = 24 * 60 * 60 * 1000L; //1일
   private Key secretKey;
+
+  public GatewayJwtUtil(@Value("${jwt.key}") String secretKey) {
+    SECRET_KEY = secretKey;
+  }
 
   @PostConstruct // 딱 한번만 호출하면 되는 자원에 씀. 또 호출하는 것 방지
   public void init() {
     byte[] bytes = SECRET_KEY.getBytes();
     secretKey = Keys.hmacShaKeyFor(bytes);
-  }
-
-  public String generateToken(Authentication authentication) {
-
-    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-    String role = userDetails.getAuthorities().stream()
-        .findFirst()  // 단일 권한만 가져옴
-        .map(GrantedAuthority::getAuthority)  // 권한 이름 추출
-        .orElseThrow(() -> new IllegalArgumentException("사용자에게 권한이 없습니다."));
-
-    return Jwts.builder()
-        .setSubject(String.valueOf(userDetails.getId()))
-        .claim("username", userDetails.getUsername())
-        .claim("role", role)
-        .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-        .signWith(secretKey)
-        .compact();
   }
 
   public boolean validateToken(String token) {

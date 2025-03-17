@@ -20,7 +20,6 @@ public class AuthServiceImpl implements AuthService {
   private final UserClient userClient;
   private final JwtUtil jwtUtil;
   private final RedisService redisService;
-  private final AuthService authService;
 
   @Override
   public void logout(String username) {
@@ -75,7 +74,6 @@ public class AuthServiceImpl implements AuthService {
         return new JwtAuthenticationResponseDto(userId, newAccessToken, refreshToken,
             userDetailsUsername, role);
       } else {
-        //Todo : exception
         throw new IllegalArgumentException("Invalid refresh Token");
       }
     } else {

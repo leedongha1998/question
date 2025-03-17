@@ -4,13 +4,16 @@ import com.bulbas23r.client.gateway.JwtAuthenticationFilter;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.server.WebFilter;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -29,6 +32,7 @@ public class GatewaySecurityConfig {
         .authorizeExchange(exchange -> exchange
             .pathMatchers("/api/users/sign-up").permitAll()
             .pathMatchers("/api/users/login").permitAll()
+            .pathMatchers("/api/users/test").permitAll()
             .pathMatchers("/api/users/{userId}").hasAuthority("MASTER")
             .pathMatchers("/api/auth/**").permitAll()
             .pathMatchers("/actuator/**").permitAll()

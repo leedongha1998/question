@@ -37,6 +37,11 @@ public class UserController {
     return userService.getUserDetails(username);
   }
 
+  @GetMapping("/test")
+  public String test() {
+    return "test success!!!";
+  }
+
   //유저 : 개인 상세 정보 조회
   @GetMapping("/me")
   public ResponseEntity<?> getUserDetail() {
