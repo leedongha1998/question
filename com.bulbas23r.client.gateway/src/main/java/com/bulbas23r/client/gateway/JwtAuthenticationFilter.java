@@ -1,11 +1,17 @@
 package com.bulbas23r.client.gateway;
 
-import com.bulbas23r.client.gateway.JwtAuthenticationFilter.Config;
-import common.config.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -15,78 +21,96 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
-public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<Config> {
-  private final GatewayJwtUtil jwtUtil;
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
-  public JwtAuthenticationFilter(GatewayJwtUtil jwtUtil) {
-    super(Config.class);
-    this.jwtUtil = jwtUtil;
-  }
+  @Value("${jwt.key}")
+  private String jwtSecret;
 
-  public static class Config {
-    // 필요한 설정을 추가할 수 있음
-    private boolean includeDebugHeaders;
+  private static final String AUTHORIZATION_HEADER = "Authorization";
+  private static final String BEARER_PREFIX = "Bearer ";
+  private static final String USER_ID_HEADER = "X-User-Id";
+  private static final String USERNAME_HEADER = "X-User-Username";
+  private static final String ROLE_HEADER = "X-User-Role";
 
-    public boolean isIncludeDebugHeaders() {
-      return includeDebugHeaders;
-    }
-
-    public void setIncludeDebugHeaders(boolean includeDebugHeaders) {
-      this.includeDebugHeaders = includeDebugHeaders;
-    }
-  }
+    private final List<String> openApiEndpoints = List.of(
+      "/api/auth/login",
+      "/api/auth/refresh-token",
+      "/api/auth/logout",
+      "/api/users/sign-up",
+      "/api/users/test",
+      "/actuator");
 
   @Override
-  public GatewayFilter apply(Config config) {
-    return (exchange, chain) -> {
-      ServerHttpRequest request = exchange.getRequest();
+  public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    ServerHttpRequest request = exchange.getRequest();
 
-      // 인증 헤더 확인
-      if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-        return onError(exchange, "Authorization header is missing", HttpStatus.UNAUTHORIZED);
+    // JWT 토큰이 필요 없는 경로 확인 (예: /auth/login, /auth/register 등)
+    if (isSecuredPath(request)) {
+      List<String> authHeader = request.getHeaders().get(AUTHORIZATION_HEADER);
+
+      // Authorization 헤더가 없거나 Bearer 토큰이 아닌 경우
+      if (authHeader == null || authHeader.isEmpty() || !authHeader.get(0).startsWith(BEARER_PREFIX)) {
+        return onError(exchange, "Authorization header is missing or invalid", HttpStatus.UNAUTHORIZED);
       }
 
-      String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        return onError(exchange, "Invalid Authorization header format", HttpStatus.UNAUTHORIZED);
-      }
+      // Bearer 접두사 제거
+      String token = authHeader.get(0).substring(BEARER_PREFIX.length());
 
-      // 토큰 추출 및 검증
-      String token = authHeader.substring(7);
       try {
-        if (!jwtUtil.validateToken(token)) {
-          return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
-        }
+        // JWT 토큰 검증 및 Claims 추출
+        Claims claims = validateToken(token);
 
-        // 토큰에서 정보 추출
-        String username = jwtUtil.extractUsername(token);
-        String role = jwtUtil.extractRole(token);
+        // Claims에서 필요한 정보 추출
+        String userId = claims.getSubject();
+        String username = claims.get("username", String.class);
+        String role = claims.get("role", String.class);
 
-        // 요청 헤더에 사용자 정보 추가
-        ServerHttpRequest modifiedRequest = request.mutate()
-            .header("X-Auth-Username", username)
-            .header("X-Auth-Role", role)
+        // 추출한 Claims 정보를 헤더에 추가하여 마이크로서비스로 전달
+        ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+            .header(USER_ID_HEADER, userId)
+            .header(USERNAME_HEADER, username)
+            .header(ROLE_HEADER, role)
             .build();
 
-        // 디버그 헤더 추가 (설정에 따라)
-        if (config.isIncludeDebugHeaders()) {
-          modifiedRequest = modifiedRequest.mutate()
-              .header("X-Debug-Token-Validated", "true")
-              .build();
-        }
-
+        // 수정된 요청으로 교체
         return chain.filter(exchange.mutate().request(modifiedRequest).build());
-
       } catch (Exception e) {
-        return onError(exchange, "Token validation failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+        return onError(exchange, "Invalid JWT token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
       }
-    };
+    }
+
+    // JWT 검증이 필요 없는 경로는 그대로 통과
+    return chain.filter(exchange);
+  }
+
+  private boolean isSecuredPath(ServerHttpRequest request) {
+    String path = request.getURI().getPath();
+    // JWT 검증이 필요 없는 경로 정의 (예외 처리)
+    return !openApiEndpoints.contains(path);
+  }
+
+  private Claims validateToken(String token) {
+    // JWT 시크릿 키를 이용하여 SecretKey 객체 생성
+    SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+
+    // JWT 토큰 파싱 및 Claims 추출
+    return Jwts.parserBuilder()
+        .setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
   }
 
   private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {
     ServerHttpResponse response = exchange.getResponse();
     response.setStatusCode(status);
-    response.getHeaders().add("X-Auth-Error", message);
     return response.setComplete();
+  }
+
+  @Override
+  public int getOrder() {
+    // 필터 실행 순서, 낮은 값이 먼저 실행됨
+    return -1;
   }
 }
