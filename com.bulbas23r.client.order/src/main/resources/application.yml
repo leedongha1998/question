@@ -1,10 +1,13 @@
 spring:
   application:
     name: order-service
-
+  config:
+    import: configserver:http://localhost:18080
   cloud:
     config:
-      enabled: false
+      discovery:
+        enabled: true
+        service-id: config-server
 
 server:
   port: 19092
@@ -14,6 +17,14 @@ eureka:
     service-url:
       defaultZone: http://localhost:19090/eureka/
 
+springdoc:
+  api-docs:
+    version: openapi_3_1
+    enabled: true
+    path: /order-service/v3/api-docs
+  enable-spring-security: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
 #management:
 #  zipkin:
 #    tracing:
