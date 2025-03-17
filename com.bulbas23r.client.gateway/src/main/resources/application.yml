@@ -3,7 +3,8 @@ spring:
     web-application-type: reactive  # Spring 애플리케이션이 리액티브 웹 애플리케이션으로 설정됨
   application:
     name: gateway-service  # 애플리케이션 이름을 ‘gateway-service’로 설정
-
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration #
   cloud:
     gateway:
       routes:  # Spring Cloud Gateway의 라우팅 설정
@@ -11,6 +12,14 @@ spring:
           uri: lb://order-service  # ‘order-service’라는 이름으로 로드 밸런싱된 서비스로 라우팅
           predicates:
             - Path=/api/orders/**  # /order/** 경로로 들어오는 요청을 이 라우트로 처리
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
 #        - id: product-service  # 라우트 식별자
 #          uri: lb://product-service  # ‘product-service’라는 이름으로 로드 밸런싱된 서비스로 라우팅
 #          predicates:
@@ -30,3 +39,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+
+jwt:
+  key : "asdlkfjasldfjksdlfjkasdf"

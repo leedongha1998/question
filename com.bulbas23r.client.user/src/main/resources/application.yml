@@ -1,0 +1,35 @@
+server:
+  port: 19092
+
+spring:
+  application:
+    name: user-service
+  cloud:
+    config:
+      enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        default_schema: USER_SCHEMA
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bulbasaur
+    username: root
+    password: root
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: USER_SCHEMA
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
